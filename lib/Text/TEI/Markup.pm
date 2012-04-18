@@ -4,9 +4,10 @@ use strict;
 use vars qw( $VERSION @EXPORT_OK );
 use Encode;
 use Exporter 'import';
+use Scalar::Util;
 use XML::LibXML;
 
-$VERSION = '1.5';
+$VERSION = '1.6';
 @EXPORT_OK = qw( &to_xml &word_tag_wrap );
 
 =head1 NAME
@@ -506,7 +507,7 @@ sub word_tag_wrap {
 	my @textnodes = $root->getElementsByTagName( 'text' );
 	my %paragraphs;  # Cope with the fact that text nodes can be recursive
 	foreach my $t ( @textnodes ) {
-		map { $paragraphs{$_} = $_ } $t->getElementsByTagName( 'p' );
+		map { $paragraphs{Scalar::Util::refaddr( $_ )} = $_ } $t->getElementsByTagName( 'p' );
 	}
 	foreach my $p ( values %paragraphs ) {
 		my $new_p = _wrap_children( $p );
