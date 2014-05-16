@@ -10,6 +10,7 @@ use Text::TEI::Markup qw( to_xml word_tag_wrap );
 use XML::LibXML;
 use XML::LibXML::XPathContext;
 
+binmode STDERR, ':utf8';
 eval { no warnings; binmode $DB::OUT, ':utf8' };
 
 my %opts = (
@@ -155,11 +156,11 @@ is( @nestwords, 0, "Did not nest any words" );
 # Test a file with spaces in the HEAD tags
 my $xml2;
 my @NT = <DATA>;
-warnings_exist {
+warnings_like {
 	$xml2 = to_xml( file => "t/data/test2.txt", 
 					template => join( '', @NT ),
-					number_conversion => \&arm2int )
-} [qr/Empty argument passed to hi tag/], 
+					number_conversion => \&arm2int );
+} [qr/^\(16\)/], 
 	"Got a parse warning on second markup";
 ok( $xml2, "Parse of second markup succeeded" );
 my $xmlobj2 = $parser->parse_string( $xml2 );
@@ -174,10 +175,14 @@ is( $repo, 'Mekhitarist Library', "Repository got set correctly" );
 
 # Test number generation with meta tags
 my @numbers = $xpc2->findnodes( '//tei:num' );
+is( scalar @numbers, 5, "Found all expected numbers" );
 is( $numbers[0]->getAttribute('value'), 3, "Got correct value for number" );
 is( $numbers[0]->getAttribute('type'), 'ordinal', "Got correct type for number" );
 is( $numbers[1]->getAttribute('value'), 100, "Got correct value for number" );
-is( $numbers[2]->getAttribute('value'), 1, "Got correct value for number" );
+is( $numbers[2]->getAttribute('value'), 2, "Got correct value for number" );
+is( $numbers[3]->getAttribute('value'), 2, "Got correct value for number" );
+is( $numbers[3]->getAttribute('type'), 'ordinal', "Got correct type for number" );
+is( $numbers[4]->getAttribute('value'), 1, "Got correct value for number" );
 
 # Test empty hilight field
 my @hilights = $xpc2->findnodes( '//tei:hi' );
@@ -188,7 +193,9 @@ done_testing();
 
 __DATA__
 <?xml version="1.0" encoding="UTF-8"?>
-<TEI xmlns="http://www.tei-c.org/ns/1.0">
+<TEI xmlns="http://www.tei-c.org/ns/1.0"
+	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng">
   <teiHeader>
 	<fileDesc>
 	  <titleStmt>

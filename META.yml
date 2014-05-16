@@ -28,4 +28,4 @@ requires:
   perl: 5.008003
 resources:
   license: http://dev.perl.org/licenses/
-version: 1.8.1
+version: 1.9
